@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.10.9)  18 MAY 2026 20:45
+This is XeTeX, Version 3.141592653-2.6-0.999993 (TeX Live 2021) (preloaded format=xelatex 2021.10.9)  18 MAY 2026 20:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -702,64 +702,9 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 21.
 
 (/usr/local/texlive/2021/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-
-LaTeX Warning: Citation `griffiths' on page 1 undefined on input line 25.
-
-
-LaTeX Warning: Citation `sakurai' on page 1 undefined on input line 25.
-
-
-LaTeX Warning: Citation `trefethen' on page 1 undefined on input line 86.
-
-
-LaTeX Warning: Citation `boyd' on page 1 undefined on input line 86.
-
-[1
+) [1
 
 ]
-
-LaTeX Warning: Citation `fft' on page 2 undefined on input line 108.
-
-LaTeX Font Info:    Font shape `TU/STSong(0)/m/sl' in size <12> not available
-(Font)              Font shape `TU/STSong(0)/m/it' tried instead on input line 
-163.
-[2]
-
-LaTeX Warning: Citation `trefethen' on page 3 undefined on input line 208.
-
-
-LaTeX Warning: Citation `boyd' on page 3 undefined on input line 208.
-
-
-LaTeX Warning: Citation `fft' on page 3 undefined on input line 270.
-
-[3] [4] [5]
-File: ../field_state/electron_img/frame_0000.jpg Graphic file (type bmp)
-<../field_state/electron_img/frame_0000.jpg>
-File: ../field_state/electron_img/frame_0300.jpg Graphic file (type bmp)
-<../field_state/electron_img/frame_0300.jpg>
-File: ../field_state/electron_img/frame_0600.jpg Graphic file (type bmp)
-<../field_state/electron_img/frame_0600.jpg>
-File: ../field_state/electron_img/frame_0900.jpg Graphic file (type bmp)
-<../field_state/electron_img/frame_0900.jpg>
-File: ../field_state/electron_img/frame_1200.jpg Graphic file (type bmp)
-<../field_state/electron_img/frame_1200.jpg>
-File: ../field_state/electron_img/frame_1500.jpg Graphic file (type bmp)
-<../field_state/electron_img/frame_1500.jpg>
-File: ../field_state/electron_img_euler/frame_0000.jpg Graphic file (type bmp)
-<../field_state/electron_img_euler/frame_0000.jpg>
-File: ../field_state/electron_img_euler/frame_0300.jpg Graphic file (type bmp)
-<../field_state/electron_img_euler/frame_0300.jpg>
-File: ../field_state/electron_img_euler/frame_0600.jpg Graphic file (type bmp)
-<../field_state/electron_img_euler/frame_0600.jpg>
-File: ../field_state/electron_img_euler/frame_0900.jpg Graphic file (type bmp)
-<../field_state/electron_img_euler/frame_0900.jpg>
-File: ../field_state/electron_img_euler/frame_1200.jpg Graphic file (type bmp)
-<../field_state/electron_img_euler/frame_1200.jpg>
-File: ../field_state/electron_img_euler/frame_1500.jpg Graphic file (type bmp)
-<../field_state/electron_img_euler/frame_1500.jpg>
- [6]
 
 Package fontspec Warning: Font "STFangsong" does not contain requested Script
 (fontspec)                "CJK".
@@ -787,29 +732,48 @@ Package fontspec Info: Font family 'STFangsong(0)' created for font
 (fontspec)             <->"STFangsong/OT:language=dflt;"
 (fontspec)             - 'small caps'  (m/sc) with NFSS spec.: 
 
-[7] [8] [9] (./a.aux)
-
-LaTeX Warning: There were undefined references.
-
+LaTeX Font Info:    Font shape `TU/STSong(0)/m/sl' in size <12> not available
+(Font)              Font shape `TU/STSong(0)/m/it' tried instead on input line 
+164.
+[2] [3] [4] [5]
+File: ../field_state/electron_img/frame_0000.jpg Graphic file (type bmp)
+<../field_state/electron_img/frame_0000.jpg>
+File: ../field_state/electron_img/frame_0300.jpg Graphic file (type bmp)
+<../field_state/electron_img/frame_0300.jpg>
+File: ../field_state/electron_img/frame_0600.jpg Graphic file (type bmp)
+<../field_state/electron_img/frame_0600.jpg>
+File: ../field_state/electron_img/frame_0900.jpg Graphic file (type bmp)
+<../field_state/electron_img/frame_0900.jpg>
+File: ../field_state/electron_img/frame_1200.jpg Graphic file (type bmp)
+<../field_state/electron_img/frame_1200.jpg>
+File: ../field_state/electron_img/frame_1500.jpg Graphic file (type bmp)
+<../field_state/electron_img/frame_1500.jpg>
+File: ../field_state/electron_img_euler/frame_0000.jpg Graphic file (type bmp)
+<../field_state/electron_img_euler/frame_0000.jpg>
+File: ../field_state/electron_img_euler/frame_0300.jpg Graphic file (type bmp)
+<../field_state/electron_img_euler/frame_0300.jpg>
+File: ../field_state/electron_img_euler/frame_0600.jpg Graphic file (type bmp)
+<../field_state/electron_img_euler/frame_0600.jpg>
+File: ../field_state/electron_img_euler/frame_0900.jpg Graphic file (type bmp)
+<../field_state/electron_img_euler/frame_0900.jpg>
+File: ../field_state/electron_img_euler/frame_1200.jpg Graphic file (type bmp)
+<../field_state/electron_img_euler/frame_1200.jpg>
+File: ../field_state/electron_img_euler/frame_1500.jpg Graphic file (type bmp)
+<../field_state/electron_img_euler/frame_1500.jpg>
+ [6] [7] [8] (./a.aux)
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 
-
-Package rerunfilecheck Warning: File `a.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `a.out':
-(rerunfilecheck)             Before: F466B09E2915CE051625BD87E9BA1F99;1605
-(rerunfilecheck)             After:  14FFC727C71EDEED3846086DC078E22B;1785.
+Package rerunfilecheck Info: File `a.out' has not changed.
+(rerunfilecheck)             Checksum: 14FFC727C71EDEED3846086DC078E22B;1785.
  ) 
 Here is how much of TeX's memory you used:
- 17277 strings out of 476919
- 356995 string characters out of 5821840
- 698275 words of memory out of 5000000
- 36985 multiletter control sequences out of 15000+600000
- 419300 words of font info for 118 fonts, out of 8000000 for 9000
+ 17293 strings out of 476919
+ 357238 string characters out of 5821840
+ 700610 words of memory out of 5000000
+ 36992 multiletter control sequences out of 15000+600000
+ 420877 words of font info for 126 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 101i,7n,104p,341b,891s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 101i,8n,104p,341b,568s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on a.pdf (9 pages).
+Output written on a.pdf (8 pages).

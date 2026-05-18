@@ -208,10 +208,7 @@ $
 
 虽然实现简单，但会带来明显数值色散误差，并且在高频波传播问题中容易产生数值不稳定。
 
-因此本文采用傅里叶谱方法计算空间导数
-\cite{trefethen,boyd}。
-
-设：
+因此本文采用傅里叶谱方法计算空间导数，设：
 
 \[
 \hat\psi(k_x,k_y)
@@ -247,17 +244,12 @@ $
 -(k_x^2+k_y^2)\hat\psi.
 \]
 
-记：
-
-$k^2=k_x^2+k_y^2,$
-
-则：
-
-\[
+记：$k^2=k_x^2+k_y^2$，则：
+$
 \widehat{\Delta\psi}
 =
 -k^2\hat\psi.
-\]
+$
 
 因此可以通过 FFT 快速计算拉普拉斯项：
 
@@ -429,11 +421,7 @@ V(x,y)
 其中：
 $\alpha>0$ 时为吸引势，$\alpha<0$ 时为排斥势，$\varepsilon$ 用于避免分母奇异。
 
-当：
-
-$\alpha=0$
-
-时，系统退化为自由粒子传播模型。
+当 $\alpha=0$时，系统退化为自由粒子传播模型。
 
 \subsection{方法总结}
 
@@ -467,30 +455,18 @@ i2\pi p(y-y_0)
 \right).
 \]
 
-其中：
-
-\[
+其中：$
 x_0=0.5,
 \qquad
 y_0=0.2,
-\]
-
-波包宽度为：
-
-$\sigma=0.1,$
-
+$，波包宽度为：
+$\sigma=0.1,$，
 初始波数为：
-
-$p=10.$
-
+$p=10.$，
 实验采用二维离散网格：
-
-$512\times512,$
-
+$512\times512,$，
 时间步长设置为：
-
-$dt=10^{-3}.$
-
+$dt=10^{-3}.$，
 程序在每一个时间步均保存波函数图像，用于后续分析与视频生成。
 
 \subsection{FFT谱方法传播结果}
@@ -584,38 +560,28 @@ $dt=10^{-3}.$
 \end{figure}
 
 程序并未直接显示概率密度：
-
-$|\psi(x,y,t)|^2,$
-
+$|\psi(x,y,t)|^2,$，
 而是对波函数实部与虚部分别进行颜色编码。
-
-设：
-
-\[
+设$
 \psi(x,y,t)
 =
 \Re(\psi)+i\Im(\psi),
-\]
+$
+那么红色通道表示波函数实部，蓝色通道表示波函数虚部，黑色区域表示波函数幅值较小。
 
-则：
-红色通道表示波函数实部，蓝色通道表示波函数虚部，黑色区域表示波函数幅值较小。
-
-因此：
+因此我们可以这样解释颜色：
 红色越亮表示实部越大，蓝色越亮表示虚部越大，紫色区域表示实部与虚部同时较强，黑色区域表示波函数接近零。
-
 相比单独显示概率密度，这种复平面颜色编码能够更直观展示波函数相位旋转与干涉结构。
 
 从图中可以观察到：
 初始高斯波包沿 $y$ 方向传播，波函数相位不断旋转并导致颜色持续变化，
 波包在传播过程中逐渐扩散，边界附近出现反射与干涉现象，
 且波函数整体保持连续和平滑。
-
 这些现象符合量子波传播的基本规律。
 
 \subsection{有限差分方法对比实验}
 
 为了比较不同数值方法的表现，本文进一步实现了基于有限差分拉普拉斯算子的显式时间推进方法。
-
 有限差分拉普拉斯采用五点格式：
 
 \[
@@ -659,7 +625,6 @@ iH\psi \Delta t
 $H\psi=-\Delta\psi+V\psi.$
 
 图~\ref{fig:euler_series} 展示了有限差分方法下的传播结果。
-
 
 从图中可以观察到：
 波包同样会发生扩散，相位不断变化，边界附近会出现明显数值反射，
@@ -743,18 +708,6 @@ J. P. Boyd,
 \textit{Chebyshev and Fourier Spectral Methods},
 2nd Edition,
 Dover Publications, 2001.
-
-\bibitem{strang}
-G. Strang,
-\textit{Computational Science and Engineering},
-Wellesley-Cambridge Press, 2007.
-
-\bibitem{press}
-W. H. Press, S. A. Teukolsky, 
-W. T. Vetterling, and B. P. Flannery,
-\textit{Numerical Recipes: The Art of Scientific Computing},
-3rd Edition,
-Cambridge University Press, 2007.
 
 \bibitem{fft}
 J. W. Cooley and J. W. Tukey,
