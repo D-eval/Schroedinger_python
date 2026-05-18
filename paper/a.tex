@@ -1,0 +1,763 @@
+\documentclass[UTF8,a4paper,12pt]{ctexart}
+
+\usepackage{amsmath,amssymb,bm}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{physics}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{cite}
+
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+\title{二维薛定谔方程的谱方法数值推导}
+\author{王博宇}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{问题背景}
+
+薛定谔方程是量子力学中的基本控制方程，用于描述微观粒子波函数随时间的演化规律
+\cite{griffiths,sakurai}。
+在经典力学中，粒子的状态通常由位置与速度决定；
+而在量子力学中，粒子的状态由复值波函数
+$\psi(x,y,t)$
+决定，其模平方
+$|\psi(x,y,t)|^2$
+表示粒子在空间中的概率密度分布。
+
+时变薛定谔方程（Time-Dependent Schrödinger Equation, TDSE）具有重要的理论与工程意义。例如：
+电子在势场中的传播、原子与分子的量子态演化、量子隧穿与干涉现象、
+半导体器件中的电子输运、光波与量子波包传播模拟，以及 Bose--Einstein 凝聚态系统都属于其典型应用场景。
+
+然而，薛定谔方程通常难以获得解析解。
+除了少量理想模型（如无限深势阱、简谐振子、氢原子等）外，
+大多数实际问题都需要依赖数值方法进行求解。
+
+本文考虑二维时变薛定谔方程：
+
+\[
+i\frac{\partial \psi}{\partial t}
+=
+-\Delta \psi + V(x,y)\psi,
+\]
+
+其中 $ \psi(x,y,t) $ 为二维复值波函数；$
+    \Delta
+    =
+    \frac{\partial^2}{\partial x^2}
+    +
+    \frac{\partial^2}{\partial y^2} $
+为二维拉普拉斯算子；
+$ V(x,y) $
+表示外部势场。
+
+其中拉普拉斯项对应粒子的动能项，而势场项描述外部环境对粒子的影响。
+
+本文希望解决的问题包括：
+如何数值模拟二维波函数的传播过程，如何稳定计算波函数的空间二阶导数，
+如何高效求解大规模二维网格上的薛定谔方程，如何直观展示复值波函数的相位与传播行为，
+以及比较不同数值方法（有限差分与 FFT 谱方法）的性能差异。
+
+在传统有限差分方法中，拉普拉斯算子通常采用局域差分近似：
+
+\[
+\Delta \psi_{i,j}
+\approx
+\psi_{i+1,j}
++
+\psi_{i-1,j}
++
+\psi_{i,j+1}
++
+\psi_{i,j-1}
+-
+4\psi_{i,j}.
+\]
+
+这种方法实现简单，但会带来较明显的数值色散误差，
+并且在高频传播问题中容易产生不稳定现象。
+
+为了获得更高精度，本文采用傅里叶谱方法（Fourier Spectral Method）
+计算拉普拉斯算符 \cite{trefethen,boyd}。
+其核心思想是利用傅里叶变换将微分运算转化为频域中的代数乘法。
+
+设：
+
+\[
+\hat\psi(k_x,k_y)
+=
+\mathcal{F}[\psi(x,y)],
+\]
+
+则有：
+
+\[
+\mathcal{F}[\Delta\psi]
+=
+-(k_x^2+k_y^2)\hat\psi.
+\]
+
+因此空间二阶导数可以通过 FFT 快速计算，而无需显式构造差分模板。
+
+快速傅里叶变换（Fast Fourier Transform, FFT）
+可以高效实现频域计算 \cite{fft}。
+相比传统有限差分方法，FFT 谱方法具有：
+更高的空间精度、更低的数值色散、更平滑的波传播效果，
+并且更适合处理周期性与波动问题。
+
+因此，FFT 谱方法已经成为求解时变薛定谔方程、
+Gross--Pitaevskii 方程以及各种波动方程的重要数值工具。
+
+本文将基于 Python、NumPy 与 Pygame，
+实现二维量子波包传播的可视化模拟，
+并比较有限差分方法与 FFT 谱方法在数值表现与运行效率上的差异。
+
+\section{方法提出}
+
+本文研究二维时变薛定谔方程的数值求解与可视化问题。为了模拟量子波包在二维空间中的传播行为，本文采用傅里叶谱方法（Fourier Spectral Method）对空间导数进行离散，并结合显式时间推进格式实现波函数演化。
+
+\subsection{二维薛定谔方程}
+
+本文考虑二维时变薛定谔方程：
+
+\[
+i\frac{\partial \psi}{\partial t}
+=
+-\Delta \psi + V(x,y)\psi,
+\]
+
+其中：
+$\psi(x,y,t)$ 为二维复值波函数；
+$\Delta=\frac{\partial^2}{\partial x^2}+\frac{\partial^2}{\partial y^2}$ 为二维拉普拉斯算子；
+$V(x,y)$ 表示外部势场。
+
+其中拉普拉斯项对应粒子的动能项，而势场项描述外部环境对量子粒子的作用。
+
+\subsection{初始波包构造}
+
+为了模拟局域化量子粒子的传播，本文采用二维高斯波包作为初始条件：
+
+\[
+\psi(x,y,0)
+=
+\exp\left(
+-\frac{(x-x_0)^2+(y-y_0)^2}{2\sigma^2}
+\right)
+\exp\left(
+i2\pi p(y-y_0)
+\right).
+\]
+
+其中：
+第一项为高斯包络，用于控制粒子的空间局域性；
+$(x_0,y_0)$ 为初始中心位置；$\sigma$ 控制波包宽度；
+第二项为平面波相位，用于赋予波包初始动量；$p$ 表示初始波数大小。
+
+因此，该初始条件可以理解为“具有初始传播方向的局域化量子粒子”。
+
+\subsection{波函数归一化}
+
+量子力学中，波函数模平方表示概率密度： $\rho(x,y,t)=|\psi(x,y,t)|^2.$，其中概率总和必须满足： $\iint_\Omega |\psi(x,y,t)|^2 \dd x \dd y = 1.$，
+离散化后，设网格尺寸为：
+$ \Delta x=\frac1{N_x},
+\qquad
+\Delta y=\frac1{N_y},
+$ 则归一化因子为：
+$
+C
+=
+\sum_{j,k}
+|\psi_{j,k}|^2
+\Delta x\Delta y.
+$
+因此每一步演化后需要执行：
+$
+\psi_{j,k}
+\leftarrow
+\frac{\psi_{j,k}}{\sqrt{C}}.
+$
+
+由于本文采用显式 Euler 时间推进，其并不严格满足幺正性，因此重新归一化能够有效抑制数值误差累积。
+
+\subsection{傅里叶谱方法}
+
+传统有限差分方法通常采用局域模板近似拉普拉斯算子：
+
+\[
+\Delta \psi_{i,j}
+\approx
+\psi_{i+1,j}
++
+\psi_{i-1,j}
++
+\psi_{i,j+1}
++
+\psi_{i,j-1}
+-
+4\psi_{i,j}.
+\]
+
+虽然实现简单，但会带来明显数值色散误差，并且在高频波传播问题中容易产生数值不稳定。
+
+因此本文采用傅里叶谱方法计算空间导数
+\cite{trefethen,boyd}。
+
+设：
+
+\[
+\hat\psi(k_x,k_y)
+=
+\mathcal{F}[\psi(x,y)],
+\]
+
+根据傅里叶变换微分性质，有：
+
+\[
+\mathcal{F}
+\left[
+\frac{\partial^2\psi}{\partial x^2}
+\right]
+=
+-k_x^2\hat\psi,
+\]
+
+\[
+\mathcal{F}
+\left[
+\frac{\partial^2\psi}{\partial y^2}
+\right]
+=
+-k_y^2\hat\psi.
+\]
+
+因此：
+
+\[
+\mathcal{F}[\Delta\psi]
+=
+-(k_x^2+k_y^2)\hat\psi.
+\]
+
+记：
+
+$k^2=k_x^2+k_y^2,$
+
+则：
+
+\[
+\widehat{\Delta\psi}
+=
+-k^2\hat\psi.
+\]
+
+因此可以通过 FFT 快速计算拉普拉斯项：
+
+\[
+\Delta\psi
+=
+\mathcal{F}^{-1}
+\left[
+-k^2\mathcal{F}[\psi]
+\right].
+\]
+
+快速傅里叶变换（FFT）能够高效实现频域计算
+\cite{fft}。
+
+相比有限差分方法，傅里叶谱方法具有：
+更高空间精度、更低数值色散、更平滑波前传播，
+并且更适合波动问题。
+
+\subsection{哈密顿算符离散化}
+
+薛定谔方程中的哈密顿算符定义为：
+
+\[
+\hat H\psi
+=
+-\Delta\psi+V\psi.
+\]
+
+利用傅里叶谱方法，可以得到：
+
+\[
+-\Delta\psi
+=
+\mathcal{F}^{-1}
+\left[
+k^2\hat\psi
+\right].
+\]
+
+势场项直接在实空间计算：
+
+$V\psi=V(x,y)\psi(x,y).$
+
+因此哈密顿算符作用结果为：
+
+\[
+\hat H\psi
+=
+\mathcal{F}^{-1}
+\left[
+k^2\hat\psi
+\right]
++
+V\psi.
+\]
+
+\subsection{时间推进格式}
+
+由薛定谔方程：
+
+\[
+\frac{\partial\psi}{\partial t}
+=
+-i\hat H\psi,
+\]
+
+本文采用显式 Euler 时间推进：
+
+\[
+\psi^{n+1}
+=
+\psi^n
++
+\Delta t
+\left(
+-i\hat H\psi^n
+\right).
+\]
+
+代入哈密顿算符后得到：
+
+\[
+\psi^{n+1}
+=
+\psi^n
+-i\Delta t
+\left[
+\mathcal{F}^{-1}
+\left(
+k^2\mathcal{F}[\psi^n]
+\right)
++
+V\psi^n
+\right].
+\]
+
+该公式即为程序中每一步波函数更新的核心形式。
+
+\subsection{边界条件}
+
+为了模拟有限空间区域中的粒子传播，本文在边界处施加零边界条件：
+
+$\psi(0,y,t)=0,$
+$\psi(1,y,t)=0,$
+$\psi(x,0,t)=0,$
+$\psi(x,1,t)=0.$
+
+该条件等价于无限高势垒边界，即粒子无法离开计算区域。
+
+\subsection{波包统计量}
+
+为了分析波函数传播行为，本文进一步计算粒子位置期望值：
+
+\[
+\mathbb E[x]
+=
+\iint x|\psi|^2 \dd x\dd y,
+\]
+
+\[
+\mathbb E[y]
+=
+\iint y|\psi|^2 \dd x\dd y.
+\]
+
+定义波包中心：
+
+\[
+\bm r_c
+=
+(\mathbb E[x],\mathbb E[y]).
+\]
+
+同时定义波包扩散尺度：
+
+\[
+D_r
+=
+\iint
+\left[
+(x-\mathbb E[x])^2
++
+(y-\mathbb E[y])^2
+\right]
+|\psi|^2
+\dd x\dd y.
+\]
+
+其平方根：
+
+$\sigma_r=\sqrt{D_r}$
+
+用于描述波包扩散程度。
+
+\subsection{势场模型}
+
+本文采用中心势场：
+
+\[
+V(x,y)
+=
+-\frac{\alpha}
+{
+(x-1/2)^2+(y-1/2)^2+\varepsilon
+}.
+\]
+
+其中：
+$\alpha>0$ 时为吸引势，$\alpha<0$ 时为排斥势，$\varepsilon$ 用于避免分母奇异。
+
+当：
+
+$\alpha=0$
+
+时，系统退化为自由粒子传播模型。
+
+\subsection{方法总结}
+
+综合上述过程，本文提出了一种基于 FFT 谱方法的二维薛定谔方程数值求解框架。
+
+整体流程如下：
+首先构造高斯波包初始条件并对波函数进行归一化，然后利用 FFT 计算空间拉普拉斯项并构造哈密顿算符，
+接着使用显式 Euler 方法推进时间，最后施加边界条件并重新归一化，同时可视化波函数传播过程。
+
+该方法能够较高效地模拟二维量子波包在势场中的传播、扩散与干涉行为。
+
+\section{数值实验}
+
+为了验证本文提出的二维薛定谔方程数值求解方法，本文分别进行了：
+基于 FFT 谱方法的二维量子波包传播实验，以及有限差分方法与 FFT 谱方法的对比实验。
+
+实验主要观察波函数在二维空间中的传播、扩散、干涉以及边界反射行为，并分析不同数值方法的计算效率与数值稳定性。
+
+\subsection{实验设置}
+
+实验采用二维高斯波包作为初始条件：
+
+\[
+\psi(x,y,0)
+=
+\exp\left(
+-\frac{(x-x_0)^2+(y-y_0)^2}{2\sigma^2}
+\right)
+\exp\left(
+i2\pi p(y-y_0)
+\right).
+\]
+
+其中：
+
+\[
+x_0=0.5,
+\qquad
+y_0=0.2,
+\]
+
+波包宽度为：
+
+$\sigma=0.1,$
+
+初始波数为：
+
+$p=10.$
+
+实验采用二维离散网格：
+
+$512\times512,$
+
+时间步长设置为：
+
+$dt=10^{-3}.$
+
+程序在每一个时间步均保存波函数图像，用于后续分析与视频生成。
+
+\subsection{FFT谱方法传播结果}
+
+图~\ref{fig:wave_packet_series} 展示了基于 FFT 谱方法得到的二维波函数传播结果。
+\begin{figure}[htbp]
+    \centering
+
+    % ================= FFT =================
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img/frame_0000.jpg}
+        \caption{$t=0$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img/frame_0300.jpg}
+        \caption{$t=300$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img/frame_0600.jpg}
+        \caption{$t=600$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img/frame_0900.jpg}
+        \caption{$t=900$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img/frame_1200.jpg}
+        \caption{$t=1200$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img/frame_1500.jpg}
+        \caption{$t=1500$}
+    \end{subfigure}
+
+    \caption{FFT谱方法下，拥有初始动量的二维自由电子波包传播过程}
+    \label{fig:wave_packet_series}
+
+    \vspace{0.3cm}
+
+    % ================= Euler =================
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img_euler/frame_0000.jpg}
+        \caption{$t=0$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img_euler/frame_0300.jpg}
+        \caption{$t=300$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img_euler/frame_0600.jpg}
+        \caption{$t=600$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img_euler/frame_0900.jpg}
+        \caption{$t=900$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img_euler/frame_1200.jpg}
+        \caption{$t=1200$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.16\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{../field_state/electron_img_euler/frame_1500.jpg}
+        \caption{$t=1500$}
+    \end{subfigure}
+
+    \caption{有限差分方法下二维量子波包传播过程。可以看到在相同时间步长下，有限差分方法更容易出现局部振荡与数值误差，而 FFT 谱方法能够在更细网格下保持较稳定传播。}
+    \label{fig:euler_series}
+
+\end{figure}
+
+程序并未直接显示概率密度：
+
+$|\psi(x,y,t)|^2,$
+
+而是对波函数实部与虚部分别进行颜色编码。
+
+设：
+
+\[
+\psi(x,y,t)
+=
+\Re(\psi)+i\Im(\psi),
+\]
+
+则：
+红色通道表示波函数实部，蓝色通道表示波函数虚部，黑色区域表示波函数幅值较小。
+
+因此：
+红色越亮表示实部越大，蓝色越亮表示虚部越大，紫色区域表示实部与虚部同时较强，黑色区域表示波函数接近零。
+
+相比单独显示概率密度，这种复平面颜色编码能够更直观展示波函数相位旋转与干涉结构。
+
+从图中可以观察到：
+初始高斯波包沿 $y$ 方向传播，波函数相位不断旋转并导致颜色持续变化，
+波包在传播过程中逐渐扩散，边界附近出现反射与干涉现象，
+且波函数整体保持连续和平滑。
+
+这些现象符合量子波传播的基本规律。
+
+\subsection{有限差分方法对比实验}
+
+为了比较不同数值方法的表现，本文进一步实现了基于有限差分拉普拉斯算子的显式时间推进方法。
+
+有限差分拉普拉斯采用五点格式：
+
+\[
+\Delta \psi_{i,j}
+=
+\psi_{i+1,j}
++
+\psi_{i-1,j}
++
+\psi_{i,j+1}
++
+\psi_{i,j-1}
+-
+4\psi_{i,j}.
+\]
+
+程序实现如下：
+
+\begin{verbatim}
+lap = np.roll(psi,1,axis=0)
+    + np.roll(psi,-1,axis=0)
+    + np.roll(psi,1,axis=1)
+    + np.roll(psi,-1,axis=1)
+    - 4*psi
+\end{verbatim}
+
+同时，为提高时间精度，有限差分方法采用二阶 Taylor 展开：
+
+\[
+\psi(t+\Delta t)
+=
+\psi(t)
+-
+iH\psi \Delta t
+-
+\frac12 H^2\psi \Delta t^2.
+\]
+
+其中：
+
+$H\psi=-\Delta\psi+V\psi.$
+
+图~\ref{fig:euler_series} 展示了有限差分方法下的传播结果。
+
+
+从图中可以观察到：
+波包同样会发生扩散，相位不断变化，边界附近会出现明显数值反射，
+且局部高频振荡更加明显。
+
+相比之下，FFT 谱方法得到的波前更加连续和平滑。
+
+\subsection{计算效率分析}
+
+有限差分方法的单步复杂度约为：
+$O(N),$，
+其中 $N$ 为网格点数量。
+然而由于显式差分方法稳定性较差，需要满足：
+
+$dt < (\Delta x)^2,$
+
+因此往往需要极小时间步长。
+另一方面，FFT 谱方法虽然单步需要进行二维 FFT：
+
+$O(N\log N),$
+
+但其空间精度更高，数值色散更小，因此能够在较低网格分辨率下获得更平滑结果。
+
+实验中可以明显观察到：
+FFT 方法整体传播更加稳定，波前更加连续，并且在较低分辨率下即可获得较好结果；
+有限差分方法则更容易产生局部振荡误差。
+
+因此，在二维波动方程与量子波函数模拟问题中，FFT 谱方法通常具有更高数值效率与更优传播质量。
+
+
+\subsection{结论}
+
+
+本文从二维含势场薛定谔方程出发，推导了其傅里叶谱方法离散格式。核心思想是利用傅里叶变换的微分性质，将拉普拉斯算符转化为频域中的代数乘法，从而高效计算哈密顿算符。再结合显式 Euler 时间推进，可以得到波函数的逐步演化公式：
+\[
+\psi^{n+1}
+=
+\psi^n
+-i\Delta t
+\left[
+-\Delta\psi^n+V\psi^n
+\right]
+\]
+
+其中
+\[
+\Delta\psi^n
+=
+\mathcal{F}^{-1}
+\left[
+-(k_x^2+k_y^2)\mathcal{F}[\psi^n]
+\right].
+\]
+
+综合实验结果可以发现：
+有限差分方法实现简单；FFT 谱方法精度更高；
+FFT 方法能够更准确描述波函数传播与干涉；
+在大规模模拟中，FFT 方法具有更高效率。
+
+\begin{thebibliography}{99}
+
+\bibitem{griffiths}
+D. J. Griffiths,
+\textit{Introduction to Quantum Mechanics},
+2nd Edition,
+Pearson Prentice Hall, 2005.
+
+\bibitem{sakurai}
+J. J. Sakurai and J. Napolitano,
+\textit{Modern Quantum Mechanics},
+2nd Edition,
+Cambridge University Press, 2017.
+
+\bibitem{trefethen}
+L. N. Trefethen,
+\textit{Spectral Methods in MATLAB},
+SIAM, 2000.
+
+\bibitem{boyd}
+J. P. Boyd,
+\textit{Chebyshev and Fourier Spectral Methods},
+2nd Edition,
+Dover Publications, 2001.
+
+\bibitem{strang}
+G. Strang,
+\textit{Computational Science and Engineering},
+Wellesley-Cambridge Press, 2007.
+
+\bibitem{press}
+W. H. Press, S. A. Teukolsky, 
+W. T. Vetterling, and B. P. Flannery,
+\textit{Numerical Recipes: The Art of Scientific Computing},
+3rd Edition,
+Cambridge University Press, 2007.
+
+\bibitem{fft}
+J. W. Cooley and J. W. Tukey,
+``An Algorithm for the Machine Calculation of Complex Fourier Series,''
+\textit{Mathematics of Computation},
+vol. 19, no. 90, pp. 297--301, 1965.
+
+\end{thebibliography}
+
+\end{document}
